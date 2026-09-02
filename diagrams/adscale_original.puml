@@ -28,10 +28,38 @@ System_Boundary(monolith, "AdScale Monolith (C++ / Go / Python / Node.js)") {
     Container(analyticsService, "Analytics Service", "Python", "Аналитические SQL-запросы по production-БД")
 
     Container(adCabinet, "Advertiser Dashboard", "Node.js + JavaScript", "Web UI: управление кампаниями, отчётность")
+    
+    ContainerDb(postgres, "PostgreSQL", "PostgreSQL (одна инстанция)", "Единая БД: кампании, ставки, события, финансы, аналитика")
+    
+    ' ====================== Аннотации проблемных мест ======================
+
+note right of auctionEngine
+  **⚠ Критический bottleneck**
+  Синхронные вызовы к БД
+  в hot path (SLA ≤ 100 ms)
+end note
+
+note right of postgres
+  **⚠ Single Point of Failure**
+  Одна инстанция — нет HA
+  Нет read-replicas
+  OLTP + аналитика конкурируют
+end note
+
+note bottom of statsService
+  **⚠ Write bottleneck**
+  Прямая запись без буферизации / очередей
+  Конкуренция за ресурсы БД
+end note
+
+note bottom of analyticsService
+  **⚠ Блокировки и рост latency**
+  Heavy queries напрямую на production-БД
+end note
 }
 
 ' ====================== База данных ======================
-ContainerDb(postgres, "PostgreSQL", "PostgreSQL (одна инстанция)", "Единая БД: кампании, ставки, события, финансы, аналитика")
+
 
 ' ====================== Связи ======================
 
@@ -57,39 +85,8 @@ Rel(adCabinet, postgres, "CRUD операций", "JDBC")
 Rel(adServer, postgres, "Чтение данных для таргетинга", "JDBC")
 
 
-' Принудительное расположение (layout hints)
-Lay_D(adServer, auctionEngine)
-Lay_D(auctionEngine, deliveryService)
-Lay_D(deliveryService, statsService)
-Lay_R(statsService, financialService)
-Lay_R(financialService, analyticsService)
-Lay_D(adCabinet, postgres)
 
-' ====================== Аннотации проблемных мест ======================
 
-note right of auctionEngine
-  **⚠ Критический bottleneck**
-  Синхронные вызовы к БД
-  в hot path (SLA ≤ 100 ms)
-end note
-
-note right of postgres
-  **⚠ Single Point of Failure**
-  Одна инстанция — нет HA
-  Нет read-replicas
-  OLTP + аналитика конкурируют
-end note
-
-note bottom of statsService
-  **⚠ Write bottleneck**
-  Прямая запись без буферизации / очередей
-  Конкуренция за ресурсы БД
-end note
-
-note bottom of analyticsService
-  **⚠ Блокировки и рост latency**
-  Heavy queries напрямую на production-БД
-end note
 
 
 @enduml
