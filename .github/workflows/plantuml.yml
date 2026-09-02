@@ -21,7 +21,6 @@ jobs:
       with:
         distribution: temurin
         java-version: '25'
-      run: java --version
 
     - name: Install PlantUML
       run: sudo apt-get install plantuml
