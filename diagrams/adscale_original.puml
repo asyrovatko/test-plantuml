@@ -1,8 +1,8 @@
 @startuml
-!include C4_Context.puml
-!include C4_Container.puml
-!include C4_Component.puml
-!include C4_Code.puml
+!include Context.puml
+!include Container.puml
+!include Component.puml
+!include Code.puml
 
 LAYOUT_WITH_LEGEND()
 LAYOUT_LEFT_RIGHT()
