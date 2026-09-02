@@ -14,12 +14,7 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
-
-    - name: Set up Java
-      uses: actions/setup-java@v5
-      with:
-        java-version: '11'
+      uses: actions/checkout@v4
 
     - name: Install PlantUML
       run: sudo apt-get install plantuml
