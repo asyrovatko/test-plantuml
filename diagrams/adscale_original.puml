@@ -1,8 +1,5 @@
 @startuml
-!include C4_Context.puml
-!include C4_Container.puml
-!include C4_Component.puml
-!include C4_Code.puml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
 
 LAYOUT_WITH_LEGEND()
 LAYOUT_LEFT_RIGHT()
@@ -104,4 +101,4 @@ legend right
   <#888888> Кэширование: отсутствует
   <#888888> Асинхронные очереди: отсутствуют
 endlegend
-@enduml 
+@enduml
