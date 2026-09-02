@@ -23,7 +23,7 @@ jobs:
         java-version: 'latest'
 
     - name: update PlantUML
-      run:  sudo apt-get update plantuml
+      run:  sudo apt-get update
 
     - name: Install PlantUML
       run: sudo apt-get install plantuml
