@@ -1,9 +1,5 @@
 @startuml
-
-!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
-
-LAYOUT_WITH_LEGEND()
-LAYOUT_LEFT_RIGHT()
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
 
 title C4 Container Diagram — AdScale (AS-IS)
 
@@ -92,14 +88,4 @@ note bottom of analyticsService
   Heavy queries напрямую на production-БД
 end note
 
-' ====================== Легенда с метриками ======================
-legend right
-  <#FF0000> **15 000 RPS (пик)** 
-  <#FF7700> **P95 latency: 110–120 ms** (требование ≤ 100 ms)
-  <#FF7700> Периодические деградации в часы пик
-  <#FF0000> Нет запаса по производительности
-  <#888888> Деплой: вручную, без контейнеризации
-  <#888888> Кэширование: отсутствует
-  <#888888> Асинхронные очереди: отсутствуют
-endlegend
 @enduml
