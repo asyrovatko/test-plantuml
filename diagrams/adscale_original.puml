@@ -1,5 +1,7 @@
 @startuml
-!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+LAYOUT_WITH_LEGEND()
 
 title C4 Container Diagram — AdScale (AS-IS)
 
@@ -13,23 +15,23 @@ System_Ext(paymentGateway, "Платёжный шлюз", "Обработка п
 ' ====================== Монолит ======================
 System_Boundary(monolith, "AdScale Monolith (C++ / Go / Python / Node.js)") {
 
-    Container(adServer, "Ad Server", "C++, Go", "Принимает HTTP-запросы, определяет пользователя, подбирает кандидатов в рекламу") <<Bottleneck>>
+    Container(adServer, "Ad Server", "C++, Go", "Принимает HTTP-запросы, определяет пользователя, подбирает кандидатов в рекламу")
 
-    Container(auctionEngine, "Auction Engine", "C++", "Взвешивание ставок, бизнес-правила, расчёт победителя аукциона") <<Critical Path>>
+    Container(auctionEngine, "Auction Engine", "C++", "Взвешивание ставок, бизнес-правила, расчёт победителя аукциона")
 
     Container(deliveryService, "Delivery Service", "Node.js", "Формирует HTML/JS-разметку баннера и HTTP response")
 
-    Container(statsService, "Statistics Service", "Python", "Запись кликов и показов") <<Bottleneck>>
+    Container(statsService, "Statistics Service", "Python", "Запись кликов и показов")
 
     Container(financialService, "Financial Service", "Go", "Списание средств, выставление счетов, управление балансами")
 
-    Container(analyticsService, "Analytics Service", "Python", "Аналитические SQL-запросы по production-БД") <<Bottleneck>>
+    Container(analyticsService, "Analytics Service", "Python", "Аналитические SQL-запросы по production-БД")
 
     Container(adCabinet, "Advertiser Dashboard", "Node.js + JavaScript", "Web UI: управление кампаниями, отчётность")
 }
 
 ' ====================== База данных ======================
-ContainerDb(postgres, "PostgreSQL", "PostgreSQL (одна инстанция)", "Единая БД: кампании, ставки, события, финансы, аналитика") <<Single Point of Failure>>
+ContainerDb(postgres, "PostgreSQL", "PostgreSQL (одна инстанция)", "Единая БД: кампании, ставки, события, финансы, аналитика")
 
 ' ====================== Связи ======================
 
@@ -53,6 +55,7 @@ Rel(financialService, postgres, "Транзакции и балансы", "JDBC"
 Rel(analyticsService, postgres, "Тяжёлые аналитические запросы", "JDBC")
 Rel(adCabinet, postgres, "CRUD операций", "JDBC")
 Rel(adServer, postgres, "Чтение данных для таргетинга", "JDBC")
+
 
 ' Принудительное расположение (layout hints)
 Lay_D(adServer, auctionEngine)
@@ -87,5 +90,6 @@ note bottom of analyticsService
   **⚠ Блокировки и рост latency**
   Heavy queries напрямую на production-БД
 end note
+
 
 @enduml
