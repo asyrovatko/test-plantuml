@@ -15,11 +15,11 @@ System_Ext(paymentGateway, "Платёжный шлюз", "Обработка п
 ' ====================== Монолит ======================
 System_Boundary(monolith, "AdScale Monolith (C++ / Go / Python / Node.js)") {
 
-    Container(adServer, "Ad Server", "C++, Go", "Принимает HTTP-запросы, определяет пользователя, подбирает кандидатов в рекламу")
-
-    Container(auctionEngine, "Auction Engine", "C++", "Взвешивание ставок, бизнес-правила, расчёт победителя аукциона")
-
     Container(deliveryService, "Delivery Service", "Node.js", "Формирует HTML/JS-разметку баннера и HTTP response")
+
+    Container(adCabinet, "Advertiser Dashboard", "Node.js + JavaScript", "Web UI: управление кампаниями, отчётность")
+
+    Container(adServer, "Ad Server", "C++, Go", "Принимает HTTP-запросы, определяет пользователя, подбирает кандидатов в рекламу")
 
     Container(statsService, "Statistics Service", "Python", "Запись кликов и показов")
 
@@ -27,35 +27,35 @@ System_Boundary(monolith, "AdScale Monolith (C++ / Go / Python / Node.js)") {
 
     Container(analyticsService, "Analytics Service", "Python", "Аналитические SQL-запросы по production-БД")
 
-    Container(adCabinet, "Advertiser Dashboard", "Node.js + JavaScript", "Web UI: управление кампаниями, отчётность")
-    
+    Container(auctionEngine, "Auction Engine", "C++", "Взвешивание ставок, бизнес-правила, расчёт победителя аукциона")
+
     ContainerDb(postgres, "PostgreSQL", "PostgreSQL (одна инстанция)", "Единая БД: кампании, ставки, события, финансы, аналитика")
-    
+
     ' ====================== Аннотации проблемных мест ======================
 
-note right of auctionEngine
-  **⚠ Критический bottleneck**
-  Синхронные вызовы к БД
-  в hot path (SLA ≤ 100 ms)
-end note
+    note top of auctionEngine
+      **⚠ Критический bottleneck**
+      Синхронные вызовы к БД
+      в hot path (SLA ≤ 100 ms)
+    end note
 
-note right of postgres
-  **⚠ Single Point of Failure**
-  Одна инстанция — нет HA
-  Нет read-replicas
-  OLTP + аналитика конкурируют
-end note
+    note left of postgres
+      **⚠ Single Point of Failure**
+      Одна инстанция — нет HA
+      Нет read-replicas
+      OLTP + аналитика конкурируют
+    end note
 
-note bottom of statsService
-  **⚠ Write bottleneck**
-  Прямая запись без буферизации / очередей
-  Конкуренция за ресурсы БД
-end note
+    note top of statsService
+      **⚠ Write bottleneck**
+      Прямая запись без буферизации / очередей
+      Конкуренция за ресурсы БД
+    end note
 
-note bottom of analyticsService
-  **⚠ Блокировки и рост latency**
-  Heavy queries напрямую на production-БД
-end note
+    note bottom of analyticsService
+      **⚠ Блокировки и рост latency**
+      Heavy queries напрямую на production-БД
+    end note
 }
 
 ' ====================== База данных ======================
@@ -77,16 +77,21 @@ Rel(adCabinet, financialService, "Управление финансами", "Int
 Rel(adCabinet, analyticsService, "Запросы аналитики", "Internal Call")
 
 ' Связи с БД
-Rel(auctionEngine, postgres, "Читает ставки и кампании", "JDBC / Sync")
-Rel(statsService, postgres, "Прямая запись событий", "JDBC / Direct Write")
-Rel(financialService, postgres, "Транзакции и балансы", "JDBC")
 Rel(analyticsService, postgres, "Тяжёлые аналитические запросы", "JDBC")
+Rel(financialService, postgres, "Транзакции и балансы", "JDBC")
 Rel(adCabinet, postgres, "CRUD операций", "JDBC")
+Rel(statsService, postgres, "Прямая запись событий", "JDBC / Direct Write")
+Rel(auctionEngine, postgres, "Читает ставки и кампании", "JDBC / Sync")
 Rel(adServer, postgres, "Чтение данных для таргетинга", "JDBC")
 
 
-
-
+Lay_D(advertiser, adCabinet)
+Lay_D(endUser, deliveryService)
+Lay_L(endUser, advertiser)
+Lay_L(deliveryService, adCabinet)
+Lay_L(adServer, deliveryService)
+Lay_R(monolith, dspPartner)
+Lay_L(monolith, paymentGateway)
 
 
 @enduml
